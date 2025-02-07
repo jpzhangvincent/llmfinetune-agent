@@ -1,0 +1,14 @@
+[
+    {
+        "input": "What is the difference between a stack and a queue in data structures?",
+        "output": "A stack and a queue are both linear data structures but differ in how elements are accessed. A stack follows LIFO (Last In First Out) principle, where elements are added and removed from the same end, like a stack of plates. A queue follows FIFO (First In First Out) principle, where elements are added at one end and removed from the other, like people waiting in line. Common stack operations are push and pop, while queue operations are enqueue and dequeue."
+    },
+    {
+        "input": "Explain the concept of dependency injection in software development.",
+        "output": "Dependency injection is a software design pattern that implements inversion of control for resolving dependencies. Instead of having a class create its own dependencies, they are provided (injected) from the outside. This makes the code more modular, easier to test, and reduces coupling between components. Dependencies can be injected through constructors, setters, or interfaces, allowing for easier substitution of implementations and better separation of concerns."
+    },
+    {
+        "input": "What is the purpose of version control systems like Git?",
+        "output": "Version control systems like Git serve multiple purposes in software development: 1) They track changes to code over time, allowing developers to see who made what changes and when, 2) They enable collaboration by allowing multiple developers to work on the same codebase simultaneously through branching and merging, 3) They provide backup and restore capabilities through commit history, and 4) They facilitate code review and quality control through features like pull requests and branching strategies."
+    }
+]

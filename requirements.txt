@@ -1,0 +1,24 @@
+# Core dependencies
+torch
+transformers
+datasets
+accelerate
+wandb
+peft
+trl
+bitsandbytes
+scipy
+numpy
+pandas
+langgraph
+autotrain-advanced
+evaluate
+rouge-score
+bert-score
+
+# Development dependencies
+pytest
+black
+isort
+mypy
+ruff

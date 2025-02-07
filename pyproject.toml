@@ -1,0 +1,70 @@
+[project]
+name = "llmfinetune_agent"
+version = "0.1.0"
+description = "A Python package for managing and executing LLM fine-tuning tasks"
+authors = []
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.1.0",
+    "transformers>=4.36.0",
+    "datasets>=2.16.0",
+    "accelerate>=0.25.0",
+    "wandb>=0.16.0",
+    "peft>=0.7.0",
+    "trl>=0.7.4",
+    "bitsandbytes==0.42",
+    "scipy>=1.10.1,<2.0.0",
+    "numpy>=1.24.2,<2.0.0",
+    "pandas>=1.4.3,<2.0.0",
+    "autotrain-advanced>=0.0.1",
+    "langgraph>=0.2.70",
+    "evaluate>=0.4.3",
+]
+
+[project.optional-dependencies]
+dev = [
+"pytest>=8.0.0",
+"black>=24.1.0",
+"isort>=5.13.0",
+"mypy>=1.8.0",
+"ruff>=0.1.15",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v -s"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "B", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.hatch.build]
+include = [
+    "llmfinetune_agent/**/*.py",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["llmfinetune_agent"]

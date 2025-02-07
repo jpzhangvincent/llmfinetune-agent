@@ -1,0 +1,14 @@
+[
+    {
+        "input": "Explain what recursion is in programming.",
+        "output": "Recursion is a programming concept where a function calls itself to solve a problem by breaking it down into smaller, similar subproblems. Each recursive call works with a simpler version of the original problem until a base case is reached. For example, calculating factorial or traversing a tree structure are common applications of recursion."
+    },
+    {
+        "input": "What are the key principles of object-oriented programming?",
+        "output": "The key principles of object-oriented programming (OOP) are: 1) Encapsulation - bundling data and methods that operate on that data within a single unit or object, 2) Inheritance - creating new classes that are built upon existing classes, 3) Polymorphism - providing a single interface to entities of different types, and 4) Abstraction - hiding complex implementation details and showing only necessary features of an object."
+    },
+    {
+        "input": "How does a binary search algorithm work?",
+        "output": "A binary search algorithm works by repeatedly dividing a sorted array in half and comparing the middle element with the target value. If the middle element is the target, the search is complete. If the target is less than the middle element, search the left half; if greater, search the right half. This process continues until the target is found or determined to be not present. Binary search has a time complexity of O(log n)."
+    }
+]
