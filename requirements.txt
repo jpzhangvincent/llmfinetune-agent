@@ -1,24 +1,37 @@
 # Core dependencies
-torch
+bespokelabs-curator==0.1.15.post1
+unsloth
 transformers
 datasets
-accelerate
-wandb
-peft
+pydantic
+torch>=2.0.0
+
+# Data processing
+pandas
+numpy
+fuzzywuzzy
+python-Levenshtein  # For better performance with fuzzywuzzy
+
+# Training and evaluation
 trl
 bitsandbytes
-scipy
-numpy
-pandas
-langgraph
-autotrain-advanced
+triton
+accelerate
 evaluate
-rouge-score
-bert-score
 
-# Development dependencies
+# Utilities
+tqdm
+requests
+python-dotenv
+
+# Development
 pytest
 black
 isort
-mypy
-ruff
+flake8
+
+# Additional dependencies for unsloth
+unsloth_zoo
+
+# For ollama integration
+requests>=2.31.0
