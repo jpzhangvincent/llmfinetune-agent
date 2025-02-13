@@ -3,7 +3,7 @@ name = "llmfinetune_agent"
 version = "0.1.0"
 description = "A Python package for managing and executing LLM fine-tuning tasks"
 authors = []
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "torch>=2.1.0",
     "transformers>=4.36.0",
@@ -12,13 +12,15 @@ dependencies = [
     "wandb>=0.16.0",
     "peft>=0.7.0",
     "trl>=0.7.4",
-    "bitsandbytes==0.42",
+    "bitsandbytes>=0.42",
     "scipy>=1.10.1,<2.0.0",
-    "numpy>=1.24.2,<2.0.0",
-    "pandas>=1.4.3,<2.0.0",
     "autotrain-advanced>=0.0.1",
     "langgraph>=0.2.70",
     "evaluate>=0.4.3",
+    "unsloth>=2024.11.10",
+    "pandas>=1.5.3",
+    "bespokelabs-curator>=0.1.18.post4",
+    "fuzzywuzzy>=0.18.0",
 ]
 
 [project.optional-dependencies]

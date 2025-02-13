@@ -59,18 +59,18 @@ graph LR
 **Tech Stack and Libraries:**
 
 *   **Agent Framework:** `langgraph`
-*   **LLM Models:** Hugging Face Transformers (LLAMA, QWEN, Deepseek, and others)
-*   **Fine-tuning:** Hugging Face `trl` (for RLHF) and AutoTrain
+*   **LLM Models:** Hugging Face Transformers (LLAMA, QWEN, Deepseek, Mistral and others)
+*   **Fine-tuning:** Hugging Face `trl` (for RLHF) / `AutoTrain` / `unisloth`
 *   **Data Handling:** `pandas` (for CSV/JSON processing)
 *   **Evaluation:** Standard LLM evaluation libraries (e.g., `evaluate`, `rouge-score`, `bert-score`)
 *   **Configuration:** Extend the existing JSON-based configuration.
-* **Programming Language**: Python
+* **Programming Language**: Python 3.12 and virtual environment setup with `uv`
 
 **Execution Plan:**
 
 1.  **Initialization:**
     *   Load configuration (extending `configs/default_config.json`).
-    *   Initialize agents (Orchestrator, Data Generator, Knowledge Retrieval, Trainer, Evaluator, Debugger).
+    *   Initialize agents (Orchestrator, Data Generator, Knowledge Retrieval, Trainer, Evaluator, Debugger). Default: Orchestrator, Data Generator, Trainer, Evaluator
     *   Set up `langgraph` workflow.
 
 2.  **User Input:**
@@ -136,7 +136,7 @@ llmfinetune-agent/
 ├── evaluation/
 │    ├── __init__.py
 │    └── metrics.py # Custom evaluation metrics if needed.
-├── main.py         # Entry point for the agent
+├── agents_runner.py         # Entry point for the agent
 └── README.md
 configs/
 └── default_config.json  # Extended configuration file
@@ -145,7 +145,7 @@ requirements.txt
 
 **Enhancements:**
 
-*   **Interactive Dashboard:**  A web-based dashboard for visualizing the fine-tuning process, evaluation results, and agent interactions. This would greatly improve the user experience for non-programmers.
+*   **Interactive UI:**  A web-based dashboard for visualizing the fine-tuning process, evaluation results, and agent interactions. This would greatly improve the user experience for non-programmers.
 *   **Automated Model Selection:** Implement logic to recommend models based on task requirements and available resources.
 *   **Advanced Debugging:** Incorporate more sophisticated debugging techniques, such as analyzing attention weights or using interpretability tools.
 *   **Version Control:** Integrate with a version control system (like Git) to track changes to the model, data, and configuration.

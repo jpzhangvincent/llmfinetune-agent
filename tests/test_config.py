@@ -1,8 +1,9 @@
 """Tests for configuration management."""
 
+
 import pytest
-from pathlib import Path
 from llmfinetune.config import ConfigManager, ModelConfig
+
 
 def test_model_config():
     """Test ModelConfig initialization."""

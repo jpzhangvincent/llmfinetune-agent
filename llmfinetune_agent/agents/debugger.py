@@ -1,10 +1,10 @@
 """Debugger agent for analyzing and improving model performance."""
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Dict, List, Optional, AsyncIterator
 
-from .utils import AgentState, AgentException, format_agent_message
+from .utils import AgentException, AgentState, format_agent_message
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,12 +33,12 @@ class DebuggerAgent:
         self.debug_config = config.get("debugging", {})
         self.thresholds = config.get("evaluation", {}).get("thresholds", {})
         
-    def run(self, state: Optional[DebuggerState] = None) -> DebuggerState:
-        """Run the debugging process."""
-        if state:
-            self.state = state
-            
+    async def arun(self, state: Optional[Dict[str, Any]] = None) -> AsyncIterator[Dict[str, Any]]:
+        """Run the debugging process asynchronously."""
         try:
+            # Get evaluation results from state
+            self.state.evaluation_results = state.get("artifacts", {}).get("evaluation_results") if state else None
+            
             # Analyze evaluation results
             self._analyze_results()
             
@@ -48,13 +48,38 @@ class DebuggerAgent:
             # Create debugging report
             self._create_report()
             
-            self.state.completed = True
+            # Update and yield state
+            yield {
+                "config": self.config,
+                "messages": ["Debugging analysis complete"],
+                "current_stage": "debugging",
+                "artifacts": {
+                    "analysis_results": [
+                        {
+                            "issues": a.issues,
+                            "recommendations": a.recommendations,
+                            "priority": a.priority
+                        }
+                        for a in self.state.analysis_results
+                    ],
+                    "suggestions": self.state.suggestions
+                },
+                "metrics": {},
+                "completed": False
+            }
             
         except Exception as e:
-            self.state.error = str(e)
-            logger.error(format_agent_message("debugger", f"Error: {str(e)}"))
-            
-        return self.state
+            error_msg = f"Debugging failed: {str(e)}"
+            logger.error(format_agent_message("debugger", error_msg))
+            yield {
+                "config": self.config,
+                "messages": [error_msg],
+                "current_stage": "error",
+                "artifacts": {},
+                "metrics": {},
+                "error": error_msg,
+                "completed": False
+            }
     
     def _analyze_results(self) -> None:
         """Analyze evaluation results for issues."""

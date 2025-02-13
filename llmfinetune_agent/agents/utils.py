@@ -1,8 +1,9 @@
 """Shared utility functions for agents."""
-from typing import Any, Dict, Optional
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, Optional
+
 
 @dataclass
 class AgentState:
@@ -11,6 +12,18 @@ class AgentState:
     messages: list[str] = None
     error: Optional[str] = None
     completed: bool = False
+    current_stage: Optional[str] = None
+    artifacts: Dict[str, Any] = None
+    metrics: Dict[str, float] = None
+
+    def __post_init__(self):
+        """Initialize default values for optional fields."""
+        if self.messages is None:
+            self.messages = []
+        if self.artifacts is None:
+            self.artifacts = {}
+        if self.metrics is None:
+            self.metrics = {}
 
 def load_config(config_path: str = "configs/default_config.json") -> Dict[str, Any]:
     """Load configuration from file."""

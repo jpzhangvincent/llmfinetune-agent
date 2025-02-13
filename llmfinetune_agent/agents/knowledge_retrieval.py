@@ -1,10 +1,10 @@
 """Knowledge retrieval agent for gathering relevant information for fine-tuning."""
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Dict, List, Optional, AsyncIterator
 
-from .utils import AgentState, AgentException, format_agent_message
+from .utils import AgentException, AgentState, format_agent_message
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,20 +25,24 @@ class KnowledgeRetrievalAgent:
         self.state = KnowledgeRetrievalState(config=config)
         self.knowledge_config = config.get("knowledge_retrieval", {})
         
-    def run(self, state: Optional[KnowledgeRetrievalState] = None) -> KnowledgeRetrievalState:
-        """Run the knowledge retrieval process."""
-        if state:
-            self.state = state
-            
+    async def arun(self, state: Optional[Dict[str, Any]] = None) -> AsyncIterator[Dict[str, Any]]:
+        """Run the knowledge retrieval process asynchronously."""
         try:
             if not self.knowledge_config.get("enabled", False):
                 logger.info(format_agent_message(
                     "knowledge_retrieval", 
                     "Knowledge retrieval is disabled, skipping..."
                 ))
-                self.state.completed = True
-                return self.state
-                
+                yield {
+                    "config": self.config,
+                    "messages": ["Knowledge retrieval is disabled, skipping..."],
+                    "current_stage": "knowledge_retrieval",
+                    "artifacts": {},
+                    "metrics": {},
+                    "completed": False
+                }
+                return
+
             # Extract search queries from training data or config
             self._prepare_queries()
             
@@ -51,13 +55,32 @@ class KnowledgeRetrievalAgent:
             # Generate context data for training
             self._generate_context()
             
-            self.state.completed = True
+            # Update and yield state
+            yield {
+                "config": self.config,
+                "messages": ["Knowledge retrieval complete"],
+                "current_stage": "knowledge_retrieval",
+                "artifacts": {
+                    "retrieved_knowledge": self.state.retrieved_knowledge,
+                    "context_data": self.state.context_data,
+                    "search_results": self.state.search_results
+                },
+                "metrics": {},
+                "completed": False
+            }
             
         except Exception as e:
-            self.state.error = str(e)
-            logger.error(format_agent_message("knowledge_retrieval", f"Error: {str(e)}"))
-            
-        return self.state
+            error_msg = f"Knowledge retrieval failed: {str(e)}"
+            logger.error(format_agent_message("knowledge_retrieval", error_msg))
+            yield {
+                "config": self.config,
+                "messages": [error_msg],
+                "current_stage": "error",
+                "artifacts": {},
+                "metrics": {},
+                "error": error_msg,
+                "completed": False
+            }
     
     def _prepare_queries(self) -> None:
         """Prepare search queries based on training data or configuration."""

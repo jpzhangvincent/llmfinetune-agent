@@ -1,207 +1,158 @@
 """Evaluator agent for assessing model performance."""
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
 import json
 import logging
 from pathlib import Path
+from typing import Any, Dict, List, Optional, AsyncIterator
 
-import torch
-import evaluate
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from .utils import AgentState, AgentException, format_agent_message
+from fuzzywuzzy import fuzz
+from .utils import AgentException, format_agent_message
+from .curator_utils import create_curator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@dataclass
-class EvaluationResult:
-    """Container for evaluation results."""
-    metrics: Dict[str, float]
-    predictions: List[str]
-    references: List[str]
-    examples: List[Dict[str, Any]]
-    analysis: Dict[str, Any]
-
-@dataclass
-class EvaluatorState(AgentState):
-    """State for the evaluator agent."""
-    model_path: Optional[str] = None
-    evaluation_results: Optional[EvaluationResult] = None
-    current_metric: Optional[str] = None
-    metrics_results: Dict[str, float] = field(default_factory=dict)
-    error_analysis: Dict[str, Any] = field(default_factory=dict)
-
-class EvaluatorAgent:
+class Evaluator:
     """Agent responsible for evaluating model performance."""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.state = EvaluatorState(config=config)
         self.eval_config = config.get("evaluation", {})
-        self.model = None
-        self.tokenizer = None
-        
-    def run(self, state: Optional[EvaluatorState] = None) -> EvaluatorState:
-        """Run the evaluation process."""
-        if state:
-            self.state = state
-            
+        self.curator = create_curator(config)
+    
+    async def arun(self, state: Optional[Dict[str, Any]] = None) -> AsyncIterator[Dict[str, Any]]:
+        """Run the evaluator agent asynchronously."""
         try:
-            # Load model and tokenizer
-            self._load_model()
+            logger.info(format_agent_message("evaluator", "Starting evaluation"))
             
-            # Run evaluation
-            self._evaluate()
+            # Get model and eval data from state
+            model = state.get("artifacts", {}).get("trained_model") if state else None
+            eval_data = state.get("artifacts", {}).get("train_data") if state else []
             
-            # Perform error analysis
-            self._analyze_errors()
+            # Generate predictions using curator
+            predictions, references = self._generate_predictions(eval_data)
             
-            # Generate evaluation report
-            self._generate_report()
+            # Calculate metrics
+            metrics = self._evaluate_features(predictions, references)
             
-            self.state.completed = True
+            # Save evaluation report
+            self._save_report(metrics, predictions, references, eval_data)
+            
+            # Update and yield state
+            yield {
+                "config": self.config,
+                "messages": [f"Evaluation complete: {metrics}"],
+                "current_stage": "evaluation",
+                "artifacts": {
+                    "trained_model": model,
+                    "eval_data": eval_data,
+                    "predictions": predictions,
+                    "references": references
+                },
+                "metrics": metrics,
+                "completed": False
+            }
             
         except Exception as e:
-            self.state.error = str(e)
-            logger.error(format_agent_message("evaluator", f"Error: {str(e)}"))
-            
-        return self.state
+            error_msg = f"Evaluation failed: {str(e)}"
+            logger.error(format_agent_message("evaluator", error_msg))
+            yield {
+                "config": self.config,
+                "messages": [error_msg],
+                "current_stage": "error",
+                "artifacts": {},
+                "metrics": {},
+                "error": error_msg,
+                "completed": False
+            }
     
-    def _load_model(self) -> None:
-        """Load the fine-tuned model and tokenizer."""
-        model_path = self.state.model_path
-        if not model_path or not Path(model_path).exists():
-            raise AgentException("Model path not found")
+    def _evaluate_features(self, predictions: List[List[str]], references: List[List[str]]) -> Dict[str, float]:
+        """Evaluate feature extraction using fuzzy matching."""
+        SIMILARITY_THRESHOLD = self.eval_config.get("similarity_threshold", 0.85)
+        total_tp = 0
+        total_fp = 0
+        total_fn = 0
+
+        for pred_features, ref_features in zip(predictions, references):
+            for pred in pred_features:
+                # Check if any reference feature matches this prediction
+                best_match = max(
+                    (fuzz.ratio(pred.lower(), ref.lower()) / 100.0 for ref in ref_features),
+                    default=0
+                )
+                if best_match >= SIMILARITY_THRESHOLD:
+                    total_tp += 1
+                else:
+                    total_fp += 1
             
-        try:
-            self.model = AutoModelForCausalLM.from_pretrained(
-                model_path,
-                device_map="auto",
-                torch_dtype=torch.float16
-            )
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        except Exception as e:
-            raise AgentException(f"Error loading model: {str(e)}")
-    
-    def _evaluate(self) -> None:
-        """Run evaluation using configured metrics."""
-        metrics = self.eval_config.get("metrics", ["rouge", "bleu", "bertscore"])
-        eval_dataset = self.state.config.get("eval_dataset")
+            # Count false negatives (reference features that weren't predicted)
+            for ref in ref_features:
+                best_match = max(
+                    (fuzz.ratio(ref.lower(), pred.lower()) / 100.0 for pred in pred_features),
+                    default=0
+                )
+                if best_match < SIMILARITY_THRESHOLD:
+                    total_fn += 1
         
-        if not eval_dataset:
-            raise AgentException("No evaluation dataset provided")
-            
-        results = {}
+        # Calculate metrics
+        precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) > 0 else 0
+        recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) > 0 else 0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        
+        return {
+            "precision": precision,
+            "recall": recall,
+            "f1": f1
+        }
+
+    def _generate_predictions(self, eval_data: List[Dict[str, Any]]) -> tuple[List[List[str]], List[List[str]]]:
+        """Generate predictions using curator."""
         predictions = []
         references = []
         
-        # Run generation on evaluation dataset
-        for example in eval_dataset:
-            input_text = example.get("input", "")
-            reference = example.get("output", "")
-            
-            # Generate prediction
-            inputs = self.tokenizer(input_text, return_tensors="pt")
-            with torch.no_grad():
-                outputs = self.model.generate(
-                    inputs["input_ids"].to(self.model.device),
-                    max_new_tokens=self.eval_config.get("max_new_tokens", 128),
-                    num_return_sequences=1
-                )
-            prediction = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-            
-            predictions.append(prediction)
-            references.append(reference)
-            
-        # Calculate metrics
-        for metric_name in metrics:
-            try:
-                metric = evaluate.load(metric_name)
-                score = metric.compute(
-                    predictions=predictions,
-                    references=references
-                )
-                results[metric_name] = score
-            except Exception as e:
-                logger.warning(format_agent_message(
-                    "evaluator",
-                    f"Error computing {metric_name}: {str(e)}"
-                ))
-                
-        self.state.metrics_results = results
-        
-        # Store examples for analysis
-        examples = []
-        for i, (pred, ref) in enumerate(zip(predictions, references)):
-            examples.append({
-                "id": i,
-                "input": eval_dataset[i].get("input", ""),
-                "prediction": pred,
-                "reference": ref
+        for example in eval_data:
+            # Get predictions using curator
+            result = self.curator({
+                "product": example.get("name", ""),
+                "description": example.get("description", "")
             })
             
-        self.state.evaluation_results = EvaluationResult(
-            metrics=results,
-            predictions=predictions,
-            references=references,
-            examples=examples,
-            analysis={}
-        )
+            # Extract features
+            pred_features = result.get("features", [])
+            true_features = example.get("features", [])
+            
+            predictions.append(pred_features)
+            references.append(true_features)
+            
+        return predictions, references
     
-    def _analyze_errors(self) -> None:
-        """Perform error analysis on evaluation results."""
-        if not self.state.evaluation_results:
-            return
-            
-        analysis = {}
-        
-        # Analyze prediction lengths
-        pred_lengths = [len(p.split()) for p in self.state.evaluation_results.predictions]
-        ref_lengths = [len(r.split()) for r in self.state.evaluation_results.references]
-        
-        analysis["length_analysis"] = {
-            "avg_pred_length": sum(pred_lengths) / len(pred_lengths),
-            "avg_ref_length": sum(ref_lengths) / len(ref_lengths),
-            "length_diff": sum(abs(p - r) for p, r in zip(pred_lengths, ref_lengths)) / len(pred_lengths)
-        }
-        
-        # Find worst performing examples
-        examples = self.state.evaluation_results.examples
-        if "rouge" in self.state.metrics_results:
-            rouge_scores = self.state.metrics_results["rouge"]
-            sorted_examples = sorted(
-                examples,
-                key=lambda x: rouge_scores[x["id"]]["rouge1"]
-            )
-            analysis["worst_examples"] = sorted_examples[:5]
-            
-        self.state.error_analysis = analysis
-    
-    def _generate_report(self) -> None:
-        """Generate evaluation report."""
-        if not self.state.evaluation_results or not self.state.error_analysis:
-            return
-            
-        report_path = Path(self.state.model_path) / "evaluation_report.json"
-        
+    def _save_report(
+        self,
+        metrics: Dict[str, float],
+        predictions: List[List[str]],
+        references: List[List[str]],
+        eval_data: List[Dict[str, Any]]
+    ) -> None:
+        """Save evaluation report."""
         report = {
-            "metrics": self.state.metrics_results,
-            "error_analysis": self.state.error_analysis,
-            "examples": {
-                "best": self.state.evaluation_results.examples[-5:],
-                "worst": self.state.evaluation_results.examples[:5]
-            }
+            "metrics": metrics,
+            "examples": []
         }
         
-        with open(report_path, "w") as f:
+        # Add example-level results
+        for i, (pred, ref, example) in enumerate(zip(predictions, references, eval_data)):
+            example_metrics = self._evaluate_features([pred], [ref])
+            report["examples"].append({
+                "id": i,
+                "name": example.get("name", ""),
+                "description": example.get("description", ""),
+                "predicted_features": pred,
+                "true_features": ref,
+                "metrics": example_metrics
+            })
+        
+        # Save report
+        output_dir = Path(self.config.get("output_dir", "outputs"))
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        with open(output_dir / "evaluation_report.json", "w") as f:
             json.dump(report, f, indent=2)
-            
-    def get_results(self) -> Dict[str, Any]:
-        """Get evaluation results."""
-        if not self.state.evaluation_results:
-            return {}
-            
-        return {
-            "metrics": self.state.metrics_results,
-            "error_analysis": self.state.error_analysis
-        }
