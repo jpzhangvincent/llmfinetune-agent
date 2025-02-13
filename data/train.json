@@ -1,14 +1,43 @@
 [
-    {
-        "input": "Explain what recursion is in programming.",
-        "output": "Recursion is a programming concept where a function calls itself to solve a problem by breaking it down into smaller, similar subproblems. Each recursive call works with a simpler version of the original problem until a base case is reached. For example, calculating factorial or traversing a tree structure are common applications of recursion."
-    },
-    {
-        "input": "What are the key principles of object-oriented programming?",
-        "output": "The key principles of object-oriented programming (OOP) are: 1) Encapsulation - bundling data and methods that operate on that data within a single unit or object, 2) Inheritance - creating new classes that are built upon existing classes, 3) Polymorphism - providing a single interface to entities of different types, and 4) Abstraction - hiding complex implementation details and showing only necessary features of an object."
-    },
-    {
-        "input": "How does a binary search algorithm work?",
-        "output": "A binary search algorithm works by repeatedly dividing a sorted array in half and comparing the middle element with the target value. If the middle element is the target, the search is complete. If the target is less than the middle element, search the left half; if greater, search the right half. This process continues until the target is found or determined to be not present. Binary search has a time complexity of O(log n)."
-    }
+  {
+    "name": "Apple AirPods Pro",
+    "description": "The Apple AirPods Pro are a pair of wireless earbuds that are designed for comfort and convenience. They are lightweight in-ear earbuds and contoured for a comfortable fit, and they sit at an angle for easy access to the controls. The AirPods Pro also have a stem that is 33% shorter than the second generation AirPods, which makes them more compact and easier to store. The AirPods Pro also have a force sensor to easily control music and calls, and they have Spatial Audio with dynamic head tracking, which provides an immersive, three-dimensional listening experience.",
+    "features": [
+      "lightweight in-ear earbuds",
+      "contoured for a comfortable fit",
+      "sit at an angle for easy access to the controls",
+      "stem is 33% shorter than the second generation AirPods",
+      "force sensor to easily control music and calls",
+      "Spatial Audio with dynamic head tracking",
+      "immersive, three-dimensional listening experience"
+    ]
+  },
+  {
+    "name": "Sony WH-1000XM4",
+    "description": "The Sony WH-1000XM4 headphones feature industry-leading noise cancellation technology that adapts to your environment. They offer multipoint Bluetooth connectivity allowing you to pair with two devices simultaneously. The headphones include touch sensor controls for easy operation of volume, play, pause, and skip functions. With up to 30 hours of battery life and quick charging capability that provides 5 hours of playback from 10 minutes of charging, these headphones are perfect for long listening sessions. The speak-to-chat feature automatically pauses your music when you start speaking, and the wearing detection sensor stops playback when you remove the headphones.",
+    "features": [
+      "industry-leading noise cancellation",
+      "multipoint Bluetooth connectivity",
+      "touch sensor controls",
+      "30 hours of battery life",
+      "quick charging capability",
+      "speak-to-chat feature",
+      "wearing detection sensor"
+    ]
+  },
+  {
+    "name": "Samsung Galaxy Watch 5",
+    "description": "The Samsung Galaxy Watch 5 is a premium smartwatch with advanced health monitoring features. It includes a bioelectrical impedance sensor for body composition analysis and continuous heart rate monitoring for fitness tracking. The watch features a durable sapphire crystal display that's scratch-resistant and water-resistant up to 50 meters. With built-in GPS and route tracking, it's perfect for outdoor activities. The watch offers sleep tracking with detailed sleep stages analysis and provides a sleep coaching program. It includes contactless payment support through Samsung Pay and has a battery life of up to 40 hours with typical usage.",
+    "features": [
+      "bioelectrical impedance sensor",
+      "continuous heart rate monitoring",
+      "sapphire crystal display",
+      "water-resistant up to 50 meters",
+      "built-in GPS and route tracking",
+      "sleep tracking with sleep stages analysis",
+      "sleep coaching program",
+      "contactless payment support",
+      "40 hours battery life"
+    ]
+  }
 ]

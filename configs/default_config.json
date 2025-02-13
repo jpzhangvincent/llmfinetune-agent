@@ -1,6 +1,7 @@
 {
   "model": {
-    "base_model_name": "meta-llama/Llama-2-7b-hf",
+    "base_model_name": "ollama/llama3.2:1b",
+    "data_model_name": "ollama/llama3.1:8b",
     "model_type": "causal_lm",
     "max_length": 2048,
     "torch_dtype": "float16",
@@ -9,31 +10,66 @@
   },
   "training": {
     "output_dir": "outputs",
-    "lora_r": 8,
-    "lora_alpha": 32,
-    "lora_dropout": 0.1,
-    "learning_rate": 2e-5,
-    "num_train_epochs": 3,
-    "per_device_train_batch_size": 4,
+    "use_unsloth": true,
+    "use_peft": true,
+    "max_seq_length": 1024,
+    "batch_size": 2,
     "gradient_accumulation_steps": 4,
-    "max_grad_norm": 0.3,
-    "warmup_ratio": 0.03,
-    "use_rslora": false,
-    "use_dora": false
+    "num_epochs": 1,
+    "learning_rate": 2e-4,
+    "weight_decay": 0.01,
+    "warmup_steps": 5,
+    "logging_steps": 1,
+    "seed": 3407,
+    "train_on_responses_only": true,
+    "chat_template": "llama-3.1",
+    "peft": {
+      "r": 16,
+      "lora_alpha": 16,
+      "lora_dropout": 0,
+      "bias": "none",
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "use_gradient_checkpointing": "unsloth",
+      "use_rslora": false,
+      "loftq_config": null
+    }
   },
   "data": {
     "train_file": "data/train.json",
     "validation_file": "data/validation.json",
     "text_column": "text",
     "max_length": 512,
-    "stride": 128
+    "stride": 128,
+    "num_train_samples": 100,
+    "num_eval_samples": 40
   },
   "agents": {
-    "orchestrator": {},
-    "data_generator": {},
-    "knowledge_retrieval": {},
-    "trainer": {},
-    "evaluator": {},
-    "debugger": {}
+    "data_generator": {
+      "model_name": "ollama/llama3.1:8b",
+      "backend_params": {
+        "base_url": "http://localhost:11434",
+        "max_tokens_per_minute": 3000000,
+        "max_requests_per_minute": 10
+      }
+    },
+    "evaluator": {
+      "similarity_threshold": 0.85,
+      "metrics": ["precision", "recall", "f1"]
+    }
+  },
+  "data_generation": {
+    "enabled": true,
+    "use_personas": true,
+    "personas_dataset": "proj-persona/PersonaHub",
+    "personas_split": "train",
+    "num_personas": 100
   }
 }

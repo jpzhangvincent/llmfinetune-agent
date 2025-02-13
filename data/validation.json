@@ -1,14 +1,34 @@
 [
-    {
-        "input": "What is the difference between a stack and a queue in data structures?",
-        "output": "A stack and a queue are both linear data structures but differ in how elements are accessed. A stack follows LIFO (Last In First Out) principle, where elements are added and removed from the same end, like a stack of plates. A queue follows FIFO (First In First Out) principle, where elements are added at one end and removed from the other, like people waiting in line. Common stack operations are push and pop, while queue operations are enqueue and dequeue."
-    },
-    {
-        "input": "Explain the concept of dependency injection in software development.",
-        "output": "Dependency injection is a software design pattern that implements inversion of control for resolving dependencies. Instead of having a class create its own dependencies, they are provided (injected) from the outside. This makes the code more modular, easier to test, and reduces coupling between components. Dependencies can be injected through constructors, setters, or interfaces, allowing for easier substitution of implementations and better separation of concerns."
-    },
-    {
-        "input": "What is the purpose of version control systems like Git?",
-        "output": "Version control systems like Git serve multiple purposes in software development: 1) They track changes to code over time, allowing developers to see who made what changes and when, 2) They enable collaboration by allowing multiple developers to work on the same codebase simultaneously through branching and merging, 3) They provide backup and restore capabilities through commit history, and 4) They facilitate code review and quality control through features like pull requests and branching strategies."
-    }
+  {
+    "name": "Kindle Paperwhite",
+    "description": "The Kindle Paperwhite features a 6.8-inch glare-free display with a 300 ppi resolution for crisp text and images. It includes an adjustable warm light for comfortable reading day or night, and the e-ink technology provides a paper-like reading experience. The device is waterproof with IPX8 rating, allowing you to read worry-free at the beach or in the bath. With 8GB of storage, you can store thousands of books, and the battery life lasts up to 10 weeks on a single charge. The device supports wireless charging and includes USB-C fast charging capability. The built-in adjustable light sensors automatically adapt the display brightness to your environment.",
+    "features": [
+      "6.8-inch glare-free display",
+      "300 ppi resolution",
+      "adjustable warm light",
+      "waterproof with IPX8 rating",
+      "8GB storage capacity",
+      "10 weeks battery life",
+      "wireless charging support",
+      "USB-C fast charging",
+      "automatic brightness adjustment"
+    ]
+  },
+  {
+    "name": "DJI Mini 3 Pro",
+    "description": "The DJI Mini 3 Pro is a lightweight drone weighing less than 249 grams, making it regulation-friendly in many regions. It features a 4K camera with a 1/1.3-inch sensor capable of capturing 48MP photos and HDR video. The drone includes tri-directional obstacle sensing for enhanced safety during flight. With up to 34 minutes of flight time and a maximum transmission range of 12km, it offers extended aerial photography sessions. The drone features advanced autonomous flight modes including ActiveTrack for subject tracking and MasterShots for cinematic sequences. It includes a 90-degree rotating gimbal for vertical shooting and supports RAW photo format for professional editing.",
+    "features": [
+      "weighs less than 249 grams",
+      "4K camera with 1/1.3-inch sensor",
+      "48MP photo capability",
+      "HDR video support",
+      "tri-directional obstacle sensing",
+      "34 minutes flight time",
+      "12km transmission range",
+      "ActiveTrack subject tracking",
+      "MasterShots cinematic mode",
+      "90-degree rotating gimbal",
+      "RAW photo support"
+    ]
+  }
 ]
